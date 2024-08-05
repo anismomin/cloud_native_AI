@@ -1,4 +1,4 @@
-from project_python import main
+from src import main
 
 def test_my_first_function():
     r = main.my_first_function()
