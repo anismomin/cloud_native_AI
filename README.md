@@ -1,3 +1,22 @@
+# Development Stack
+
+    1. Modern Python 
+        https://www.youtube.com/watch?v=rwDHhx76MMg&list=PL0vKVrkG4hWrEujmnC7v2mSiaXMV_Tfu0
+        
+    2. FastAPI - Framerwork with AI applications
+        - https://www.youtube.com/watch?v=ckXDNS2iRiY&list=PL0vKVrkG4hWqWNAr6rcX0gOvU_eOULnJN&index=2&pp=iAQB
+
+    3. Postgress With SqlModel Orm - opensource databse
+
+    4. Cloud Native Development Environment - docker - composse - dev container
+        -  https://www.youtube.com/watch?v=eRbtrOIIP3k&list=PL0vKVrkG4hWqWNAr6rcX0gOvU_eOULnJN&index=4
+
+    5. Kafka Event Driven Architecture - which help to decouple application and Emit (Produce) data in realtime. which All consumer can detect and act upon that in realtime.
+        - https://github.com/panaverse/learn-generative-ai/tree/main/05_microservices_all_in_one_platform/15_event_driven/00_eda_challenge
+
+    6. 
+
+
 # Learn Python
 
 ## Python Hello World
@@ -9,6 +28,9 @@ poetry --version
 ```
 
 1. `Create new project using. include name param to create code folder name else it will use project neme as default`
+
+https://gist.github.com/CarlosDomingues/b88df15749af23a463148bd2c2b9b3fb
+
 ```
 poetry new project_python --name src
 ```
@@ -94,6 +116,7 @@ def test_items_path():
     assert response.status_code == 200
     assert response.json() == {"item_id": 1}
 ```
+# Docker
 
 ## Now let's Containerize the app
 
@@ -193,7 +216,42 @@ some time we debug running container and fix thing in that and its hard to remme
 docker commit <running container ID> <new image name>
 ```
 
-## Dev Container
+# Docker Compose
+
+now we have dockerfile. each developer in a team can use this project but they can change configuration when they run project. like port mapping, names etc. 
+
+so there is a way each one of there use same configutation , name port etc. in order to achieve this. we need to use docker composer. which installed by default with docker now.
+
+now we ceate one project with docker file. now in microservice architecture we create multiple small appliaction. which interact with each other. so for that we will run multiple applicaation and run those using docker composer so 
+
+create docker composer file. which is uses .yaml, .yml extension.
+its like a json. but here we dont use brackets instead we use sapces to formate the hrearchy.
+
+you can use 2 space, tabs etc.
+     when line start with - means array item.
+
+1. create new compose.yaml with content below.
+
+```
+version: "3.9"
+
+name: cloudnative-ai-app
+
+services:
+  api:
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+```
+2. now start with 
+
+```
+docker compose up -d
+```
+
+# Dev Container
 when you work with docker. if you change anything in code you always need to create new image in order to view that updated code.
 But if you don't want to keep build new image while you are development/debug mode.
 
