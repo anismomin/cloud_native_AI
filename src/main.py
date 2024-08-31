@@ -1,5 +1,5 @@
 def my_first_function()->str:
-        return "Hello World";
+        return "Hello Worlds";
 
 result: str = my_first_function();
 print(result);
