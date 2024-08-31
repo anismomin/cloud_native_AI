@@ -250,6 +250,54 @@ services:
 ```
 docker compose up -d
 ```
+## Docker composer with multple app in it (used network and database)
+
+3. Now add another container for database 
+```
+version: "3.9"
+
+name: cloudnative-ai-app
+
+services:
+  api:
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+    networks:
+      - my-api-net
+    depends_on:
+      - postgres_db
+
+  postgres_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=anismomin
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=todos
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - my-api-net
+  
+volumes:
+  postgres_db:
+    driver: local
+
+networks:
+  my-api-net:  # Define the custom network
+```
+2. now start with rebuild
+
+```
+docker compose up -d --build
+```
+
+
 
 # Dev Container
 when you work with docker. if you change anything in code you always need to create new image in order to view that updated code.

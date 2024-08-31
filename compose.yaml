@@ -9,7 +9,28 @@ services:
       dockerfile: Dockerfile.dev
     ports:
       - "8000:8000"
+    networks:
+      - my-api-net
+    depends_on:
+      - postgres_db
 
+  postgres_db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=anismomin
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=todos
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - my-api-net
+  
+volumes:
+  postgres_db:
+    driver: local
 
-    
-    
+networks:
+  my-api-net:  # Define the custom network
