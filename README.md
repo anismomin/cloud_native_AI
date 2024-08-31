@@ -468,3 +468,111 @@ In order to integrate kafka broker with kafkaUI use container name in the host
 https://www.youtube.com/watch?v=aTl2iSCynVc
 
 https://medium.com/@tetianaokhotnik/setting-up-a-local-kafka-environment-in-kraft-mode-with-docker-compose-and-bitnami-image-enhanced-29a2dcabf2a9
+
+
+# Kafka with Composer 
+we need to run kafka with composer as above method just run few minutes and stop. due to security 
+
+https://www.youtube.com/live/8nM1suLA0f4?si=_ruJF3xLO1tIu9l_&t=4817
+
+https://github.com/panaverse/learn-generative-ai/tree/main/05_microservices_all_in_one_platform/15_event_driven/01_kafka_single_node_compose
+
+
+# Authentication
+
+https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/#scope
+
+https://www.youtube.com/watch?v=8nM1suLA0f4&list=PL0vKVrkG4hWqWNAr6rcX0gOvU_eOULnJN&index=11
+
+https://github.com/panaverse/learn-generative-ai/blob/main/05_microservices_all_in_one_platform/16_oauth2_auth/00_generate_access_token/README.md
+
+```
+from fastapi import FastAPI, Depends, HTTPException
+from typing import Annotated
+from jose import jwt, JWTError # type: ignore
+from datetime import datetime, timedelta
+
+ALGORITHM    = "HS256"
+SECRET_KEY   = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+from fastapi.security import  OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+fake_users_db: dict[str, dict[str, str]] = {
+    "anismomin": {
+        "username": "anismomin",
+        "full_name": "Anis Momin",
+        "email": "anis@example.com",
+        "password": "master123",
+    },
+    "hafeez": {
+        "username": "hafeez",
+        "full_name": "Hafeez Memon",
+        "email": "hafeez@example.com",
+        "password": "hafeezsecret",
+    },
+}
+
+app = FastAPI(title="Authentication Service",
+              version="0.0.1",
+              servers=[
+                  {
+                      "url": "http://localhost:8001", #ADD NGROK URL HERE before creating GET Action
+                      "description": "Development server"
+                   }
+              ])
+
+def create_access_token(subject: str, expires_delta: timedelta = None) -> str:
+    expire =  datetime.utcnow() + expires_delta
+    to_encode = {"exp": expire, "sub": str(subject)}
+    encode_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encode_jwt
+
+def decode_access_token(token: str):
+    decode_jwt = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    return decode_jwt
+
+@app.get("/token")
+def get_token(user_name: str):
+    access_token = create_access_token(subject=user_name, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    return {"access_token": access_token, "token_type": "bearer", "user_name": user_name}
+
+@app.get("/decode-token")
+def decode_token(token: str):
+    try:
+        data = decode_access_token(token)
+        return data
+    except JWTError as e:
+        return {"error" : str(e)}
+    
+@app.post("/login")
+def login_request(data_form_user: Annotated[OAuth2PasswordRequestForm, Depends(OAuth2PasswordRequestForm)]):
+    try:
+        user_in_fake_db = fake_users_db.get(data_form_user.username)
+
+        #Step 1 check user is exist
+        if user_in_fake_db is None:
+            raise HTTPException(status_code=400, detail="Incorrect username")
+
+        #Step 2 check user password mactched
+        if user_in_fake_db["password"] != data_form_user.password:
+            raise HTTPException(status_code=400, detail="Incorrect password")
+
+        access_token = create_access_token(data_form_user.username, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+        return {"access_token": access_token, "token_type": "bearer"}
+    except JWTError as e:
+        return {"error" : str(e)}
+       
+
+@app.get("/users")
+def get_all_users(token: Annotated[str, Depends(oauth2_scheme)]):
+    return fake_users_db
+    
+    
+@app.get("/")
+def index():
+    return {"Hello": "Auth Service"}
+
+```

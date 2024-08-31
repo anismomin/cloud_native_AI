@@ -1,6 +1,13 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+app = FastAPI(title="Todo Service",
+              version="0.0.1",
+              servers=[
+                  {
+                      "url": "http://localhost:8000", #ADD NGROK URL HERE before creating GET Action
+                      "description": "Todos Application server"
+                   }
+              ])
 
 @app.get("/")
 def index():
