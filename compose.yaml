@@ -11,18 +11,51 @@ services:
       - "8001:8000"
     volumes:
       - ./auth_service:/code
-    networks:
-      - auth-network
-  todos-api-servcie:
+    # networks:
+    #   - cloud-native-network
+  learn_python:
+    build:
+      context: ./learn_python
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8005:8000"
+    volumes:
+      - ./todo_service:/code
+    # networks:
+    #   - cloud-native-network
+  todo-api-servce:
     build:
       context: ./todo_service
       dockerfile: Dockerfile.dev
+    depends_on:
+        - postgres_db
     ports:
-      - "8000:8000"
+      - "8000:8000"  # Expose container port 8000 to host port 8000  
+    # networks:
+    #   - cloud-native-network
+  postgres_db:
+    image: postgres:latest  # Use the official PostgreSQL image
+    restart: always
+    container_name: PostgresCont
+    environment:
+        - POSTGRES_USER=anismomin
+        - POSTGRES_PASSWORD=my_password
+        - POSTGRES_DB=mydatabase
+    ports:
+        - '5433:5432'
     volumes:
-      - ./todo_service:/code
-    networks:
-      - auth-network
+        - postgres_db:/var/lib/postgresql/data
+    # networks:
+    #   - cloud-native-network
+
+volumes:
+  postgres_db:
+    driver: local
+
+# networks:
+#   cloud-native-network:
+
 
 networks:
-  auth-network:
+  default:
+    driver: bridge

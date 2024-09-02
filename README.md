@@ -333,6 +333,9 @@ Step 2: if you already have running or stopped container of you existing code. i
 
 # Kafka
 
+### How kafaka process trillions of message.
+https://www.youtube.com/watch?v=qVbAYHxW3xg&list=PL0vKVrkG4hWqWNAr6rcX0gOvU_eOULnJN&index=13
+
 ### Kafka hello world
 https://www.youtube.com/watch?v=S4SXPSdTtUY&list=PL0vKVrkG4hWqWNAr6rcX0gOvU_eOULnJN&index=10
 
