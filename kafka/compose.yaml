@@ -1,8 +1,40 @@
-version: "3.7"
-
-name: kafka_template_02
-
+version: '3.8'
+name: template01
 services:
+  producer:
+    build:
+      context: ./producer
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./producer:/code  # Sync local development directory with the container
+    depends_on:
+        - postgres_db
+        - broker
+    ports:
+      - "8000:8000"  # Expose container port 8000 to host port 8000  
+  # consumer:
+  #   build:
+  #     context: ./consumer
+  #     dockerfile: Dockerfile.dev
+  #   volumes:
+  #     - ./consumer:/code  # Sync local development directory with the container
+  #   depends_on:
+  #       - postgres_db
+  #       - broker
+  #   ports:
+  #     - "8002:8000"  # Expose container port 8000 to host port 8000  
+  postgres_db:
+    image: postgres:latest  # Use the official PostgreSQL image
+    restart: always
+    container_name: PostgresCont
+    environment:
+        - POSTGRES_USER=ziakhan
+        - POSTGRES_PASSWORD=my_password
+        - POSTGRES_DB=mydatabase
+    ports:
+        - '5433:5432'
+    volumes:
+        - postgres_db:/var/lib/postgresql/data
   broker:
     image: apache/kafka:3.7.0
     hostname: broker
@@ -36,58 +68,9 @@ services:
       DYNAMIC_CONFIG_ENABLED: "true"
     depends_on:
       - broker
-
-  producer:
-    build:
-      context: ./kafka_producer
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./kafka_producer:/code
-    depends_on:
-        - postgres_db
-        - broker
-    ports:
-      - "8000:8000"  # Expose container port 8000 to host port 8000  
-
-  consumer:
-    build:
-      context: ./kafka_consumer
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./kafka_consumer:/code
-    depends_on:
-        - postgres_db
-        - broker
-    ports:
-      - "8001:8000"  # Expose container port 8000 to host port 8000  
-
-  postgres_db:
-    image: postgres:latest  # Use the official PostgreSQL image
-    restart: always
-    container_name: PostgresCont
-    environment:
-        - POSTGRES_USER=anismomin
-        - POSTGRES_PASSWORD=my_password
-        - POSTGRES_DB=mydatabase
-    ports:
-        - '5433:5432'
-    volumes:
-        - postgres_db:/var/lib/postgresql/data
-
-  init-kafka:
-    build:
-      context: ./init/kafka/
-    depends_on:
-      - broker
-    environment:
-      KAFKA_HOST: broker
-      KAFKA_PORT: 9092
-      KAFKA_CREATE_TOPICS: "URA_EventStream:1:1"
-
 volumes:
   postgres_db:
     driver: local
-
 networks:
   default:
     driver: bridge
