@@ -6,6 +6,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select, Sequence
 from fastapi import FastAPI, Depends
 from typing import AsyncGenerator
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
+from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 import json
 
@@ -84,6 +85,14 @@ app = FastAPI(lifespan=lifespan, title="Hello World API with DB",
         }
         ])
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins, change as necessary for security
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
+
 def get_session():
     with Session(engine) as session:
         yield session
@@ -104,14 +113,15 @@ async def get_kafka_producer():
 
 @app.post("/todos/", response_model=IBO)
 async def create_todo(todo: IBO, session: Annotated[Session, Depends(get_session)], producer: Annotated[AIOKafkaProducer, Depends(get_kafka_producer)])->IBO:
-        # todo_dict = {field: getattr(todo, field) for field in todo.dict()}
+        todo_dict = {field: getattr(todo, field) for field in todo.dict()}
 
         # todo_dict = {"ibo_number":"7022508813","event_type":"Inactivated"}
+        # todo_dict = {"ibo_number":"7022508813","event_type":"Renewed"}
         print(todo);
-        # todo_json = json.dumps(todo_dict).encode("utf-8")
+        todo_json = json.dumps(todo_dict).encode("utf-8")
         # print("todoJSON:", todo_json)
         # Produce message
-        # await producer.send_and_wait("URA_EventStream", todo_json)
+        await producer.send_and_wait("URA_EventStream", todo_json)
         # session.add(todo)
         # session.commit()
         # session.refresh(todo)
